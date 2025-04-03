@@ -37,6 +37,11 @@ class Database {
         $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8';
         
         try {
+            // Vérifier si le pilote PDO pour MySQL est disponible
+            if (!in_array('mysql', PDO::getAvailableDrivers())) {
+                throw new PDOException("Le pilote PDO pour MySQL n'est pas installé");
+            }
+            
             // Créer une instance de PDO
             $this->dbh = new PDO($dsn, DB_USER, DB_PASS, $this->options);
         } catch(PDOException $e) {

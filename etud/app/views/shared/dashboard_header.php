@@ -36,31 +36,31 @@ if (!defined('APPROOT') || !defined('URLROOT') || !defined('SITENAME')) {
                 <nav class="sidebar-nav">
                     <ul>
                         <li class="<?php echo (isset($data['active']) && $data['active'] === 'dashboard') ? 'active' : ''; ?>">
-                            <a href="<?php echo URLROOT; ?>/dashboard">
+                            <a href="index.php">
                                 <i class="fas fa-tachometer-alt"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <li class="<?php echo (isset($data['active']) && $data['active'] === 'stages') ? 'active' : ''; ?>">
-                            <a href="<?php echo URLROOT; ?>/dashboard/stages">
+                            <a href="stage.php">
                                 <i class="fas fa-briefcase"></i>
                                 <span>Offres de stages</span>
                             </a>
                         </li>
                         <li class="<?php echo (isset($data['active']) && $data['active'] === 'candidatures') ? 'active' : ''; ?>">
-                            <a href="<?php echo URLROOT; ?>/dashboard/candidatures">
+                            <a href="wishlist.php">
                                 <i class="fas fa-file-alt"></i>
                                 <span>Mes candidatures</span>
                             </a>
                         </li>
                         <li class="<?php echo (isset($data['active']) && $data['active'] === 'profil') ? 'active' : ''; ?>">
-                            <a href="<?php echo URLROOT; ?>/dashboard/profil">
+                            <a href="profil.php">
                                 <i class="fas fa-user"></i>
                                 <span>Mon profil</span>
                             </a>
                         </li>
                         <li>
-                            <a href="<?php echo URLROOT; ?>/home/logout">
+                            <a href="home/index.php">
                                 <i class="fas fa-sign-out-alt"></i>
                                 <span>Déconnexion</span>
                             </a>

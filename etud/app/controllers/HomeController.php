@@ -1,7 +1,10 @@
 <?php
 class HomeController extends Controller {
+    private $userModel;
+    
     public function __construct() {
         // Initialiser les modèles dont on a besoin
+        $this->userModel = $this->model('UserModel');
     }
     
     // Méthode pour la page d'accueil
@@ -49,15 +52,38 @@ class HomeController extends Controller {
             
             // Vérifier si les erreurs sont vides
             if(empty($data['email_err']) && empty($data['password_err'])) {
-                // TODO: Implémenter la logique de connexion avec le modèle User
+                // Tenter de connecter l'utilisateur
+                $user = $this->userModel->login($data['email'], $data['password']);
                 
-                // Rediriger temporairement vers le dashboard étudiant
-                $this->redirect('dashboard');
+                if($user) {
+                    // Créer la session
+                    $this->createUserSession($user);
+                    
+                    // Rediriger vers le dashboard en fonction du rôle
+                    if($user->role === 'etudiant') {
+                        $this->redirect('dashboard');
+                    } elseif($user->role === 'pilote') {
+                        $this->redirect('pilote');
+                    } elseif($user->role === 'admin') {
+                        $this->redirect('admin');
+                    }
+                } else {
+                    $data['password_err'] = 'Email ou mot de passe incorrect';
+                    $this->view('home/login', $data);
+                }
             }
         }
         
         // Charger la vue de connexion
         $this->view('home/login', $data);
+    }
+    
+    // Crée la session utilisateur
+    private function createUserSession($user) {
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['user_email'] = $user->email;
+        $_SESSION['user_name'] = $user->nom . ' ' . $user->prenom;
+        $_SESSION['user_role'] = $user->role;
     }
     
     // Méthode pour la déconnexion

@@ -5,151 +5,138 @@ if (!defined('APPROOT')) {
 }
 
 $data['active'] = 'stages';
+$data['title'] = 'Offres de stages';
 require APPROOT . '/views/shared/dashboard_header.php'; 
 ?>
 
-<div class="dashboard-header-actions">
+<div class="page-header">
     <h1>Offres de stages</h1>
-    <div class="filter-actions">
-        <button class="btn btn-outline" id="toggle-filters">
-            <i class="fas fa-filter"></i> Filtres
-        </button>
+    <p>Découvrez les opportunités de stage disponibles et postulez directement en ligne.</p>
+</div>
+
+<div class="filter-container">
+    <div class="search-box">
+        <form action="<?php echo URLROOT; ?>/dashboard/stages" method="GET">
+            <div class="form-group">
+                <input type="text" name="search" placeholder="Rechercher un stage..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+    </div>
+    <div class="filter-options">
+        <button class="btn-filter" id="toggleFilters"><i class="fas fa-filter"></i> Filtres</button>
+        <div class="filters-panel" id="filtersPanel">
+            <form action="<?php echo URLROOT; ?>/dashboard/stages" method="GET">
+                <div class="filter-group">
+                    <h3>Localisation</h3>
+                    <div class="form-group">
+                        <input type="text" name="location" placeholder="Ville, région..." value="<?php echo isset($_GET['location']) ? htmlspecialchars($_GET['location']) : ''; ?>">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <h3>Durée</h3>
+                    <div class="form-check">
+                        <input type="checkbox" name="duration[]" value="1-3" id="duration1" <?php echo (isset($_GET['duration']) && in_array('1-3', $_GET['duration'])) ? 'checked' : ''; ?>>
+                        <label for="duration1">1-3 mois</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="duration[]" value="4-6" id="duration2" <?php echo (isset($_GET['duration']) && in_array('4-6', $_GET['duration'])) ? 'checked' : ''; ?>>
+                        <label for="duration2">4-6 mois</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="duration[]" value="6+" id="duration3" <?php echo (isset($_GET['duration']) && in_array('6+', $_GET['duration'])) ? 'checked' : ''; ?>>
+                        <label for="duration3">6+ mois</label>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Appliquer</button>
+                    <a href="<?php echo URLROOT; ?>/dashboard/stages" class="btn btn-outline">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div class="filters-panel" id="filters-panel">
-    <form action="<?php echo URLROOT; ?>/dashboard/stages" method="GET" class="filters-form">
-        <div class="filter-group">
-            <label for="search">Recherche par mots-clés</label>
-            <input type="text" name="search" id="search" placeholder="Titre, entreprise, compétences..." 
-                   value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
-        </div>
-        
-        <div class="filter-row">
-            <div class="filter-group">
-                <label for="ville">Ville</label>
-                <select name="ville" id="ville">
-                    <option value="">Toutes les villes</option>
-                    <option value="Paris" <?php echo (isset($_GET['ville']) && $_GET['ville'] === 'Paris') ? 'selected' : ''; ?>>Paris</option>
-                    <option value="Lyon" <?php echo (isset($_GET['ville']) && $_GET['ville'] === 'Lyon') ? 'selected' : ''; ?>>Lyon</option>
-                    <option value="Marseille" <?php echo (isset($_GET['ville']) && $_GET['ville'] === 'Marseille') ? 'selected' : ''; ?>>Marseille</option>
-                    <option value="Toulouse" <?php echo (isset($_GET['ville']) && $_GET['ville'] === 'Toulouse') ? 'selected' : ''; ?>>Toulouse</option>
-                    <option value="Bordeaux" <?php echo (isset($_GET['ville']) && $_GET['ville'] === 'Bordeaux') ? 'selected' : ''; ?>>Bordeaux</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="type">Type de stage</label>
-                <select name="type" id="type">
-                    <option value="">Tous les types</option>
-                    <option value="Stage_fin_detudes" <?php echo (isset($_GET['type']) && $_GET['type'] === 'Stage_fin_detudes') ? 'selected' : ''; ?>>Stage de fin d'études</option>
-                    <option value="Stage_annee" <?php echo (isset($_GET['type']) && $_GET['type'] === 'Stage_annee') ? 'selected' : ''; ?>>Stage d'année</option>
-                    <option value="Alternance" <?php echo (isset($_GET['type']) && $_GET['type'] === 'Alternance') ? 'selected' : ''; ?>>Alternance</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="duree">Durée</label>
-                <select name="duree" id="duree">
-                    <option value="">Toutes les durées</option>
-                    <option value="2" <?php echo (isset($_GET['duree']) && $_GET['duree'] === '2') ? 'selected' : ''; ?>>2 mois</option>
-                    <option value="3" <?php echo (isset($_GET['duree']) && $_GET['duree'] === '3') ? 'selected' : ''; ?>>3 mois</option>
-                    <option value="4" <?php echo (isset($_GET['duree']) && $_GET['duree'] === '4') ? 'selected' : ''; ?>>4 mois</option>
-                    <option value="5" <?php echo (isset($_GET['duree']) && $_GET['duree'] === '5') ? 'selected' : ''; ?>>5 mois</option>
-                    <option value="6" <?php echo (isset($_GET['duree']) && $_GET['duree'] === '6') ? 'selected' : ''; ?>>6 mois</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="filter-actions">
-            <button type="submit" class="btn btn-primary">Appliquer les filtres</button>
-            <a href="<?php echo URLROOT; ?>/dashboard/stages" class="btn btn-outline">Réinitialiser</a>
-        </div>
-    </form>
-</div>
-
-<div class="stages-grid">
+<div class="stages-list-container">
     <?php if(isset($data['stages']) && count($data['stages']) > 0) : ?>
-        <?php foreach($data['stages'] as $stage) : ?>
-            <div class="stage-card elevated">
-                <div class="stage-header">
-                    <h3><?php echo $stage->titre; ?></h3>
-                    <button class="btn-icon wishlist">
-                        <i class="far fa-heart"></i>
-                    </button>
-                </div>
-                <div class="stage-company">
-                    <i class="fas fa-building"></i>
-                    <?php echo $stage->entreprise_nom; ?>
-                </div>
-                <div class="stage-details">
-                    <div class="stage-detail">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span><?php echo isset($stage->lieu) ? $stage->lieu : 'Non spécifié'; ?></span>
+        <div class="stages-grid">
+            <?php foreach($data['stages'] as $stage) : ?>
+                <div class="stage-card">
+                    <div class="stage-company-logo">
+                        <img src="<?php echo URLROOT; ?>/public/img/company-placeholder.png" alt="Logo <?php echo htmlspecialchars($stage->entreprise_nom); ?>">
                     </div>
-                    <div class="stage-detail">
-                        <i class="fas fa-calendar"></i>
-                        <span><?php echo isset($stage->duree) ? $stage->duree . ' mois' : 'Non spécifié'; ?></span>
+                    <div class="stage-info">
+                        <h3 class="stage-title"><?php echo htmlspecialchars($stage->titre); ?></h3>
+                        <div class="stage-company"><?php echo htmlspecialchars($stage->entreprise_nom); ?></div>
+                        <div class="stage-meta">
+                            <div class="stage-location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($stage->lieu); ?></div>
+                            <div class="stage-duration"><i class="fas fa-calendar-alt"></i> <?php echo $stage->duree; ?> mois</div>
+                            <div class="stage-salary"><i class="fas fa-euro-sign"></i> <?php echo $stage->remuneration; ?> €/mois</div>
+                        </div>
+                        <div class="stage-description">
+                            <?php echo substr(htmlspecialchars($stage->description), 0, 150) . '...'; ?>
+                        </div>
+                        <div class="stage-date">
+                            <i class="far fa-clock"></i> Publié le <?php echo date('d/m/Y', strtotime($stage->date_creation)); ?>
+                        </div>
                     </div>
-                    <div class="stage-detail">
-                        <i class="fas fa-tags"></i>
-                        <span><?php echo isset($stage->type) ? $stage->type : 'Non spécifié'; ?></span>
+                    <div class="stage-actions">
+                        <a href="<?php echo URLROOT; ?>/dashboard/stage/<?php echo $stage->id; ?>" class="btn btn-primary">Voir détails</a>
+                        <?php if(isset($stage->candidatureExists) && $stage->candidatureExists) : ?>
+                            <button class="btn btn-disabled" disabled><i class="fas fa-check"></i> Déjà postulé</button>
+                        <?php else : ?>
+                            <a href="<?php echo URLROOT; ?>/dashboard/postuler/<?php echo $stage->id; ?>" class="btn btn-outline">Postuler</a>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <div class="stage-description">
-                    <?php 
-                        $description = isset($stage->description) ? $stage->description : 'Aucune description disponible';
-                        echo substr($description, 0, 150) . (strlen($description) > 150 ? '...' : '');
-                    ?>
-                </div>
-                <div class="stage-actions">
-                    <a href="<?php echo URLROOT; ?>/dashboard/stage/<?php echo $stage->id; ?>" class="btn btn-outline">Détails</a>
-                    <a href="<?php echo URLROOT; ?>/dashboard/postuler/<?php echo $stage->id; ?>" class="btn btn-primary">Postuler</a>
-                </div>
-                <?php if(isset($stage->date_publication)) : ?>
-                    <div class="stage-date">
-                        <i class="fas fa-clock"></i>
-                        Publié le <?php echo date('d/m/Y', strtotime($stage->date_publication)); ?>
-                    </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if(isset($data['pagination']) && $data['pagination']['totalPages'] > 1) : ?>
+            <div class="pagination">
+                <?php if($data['pagination']['currentPage'] > 1) : ?>
+                    <a href="<?php echo URLROOT; ?>/dashboard/stages?page=<?php echo $data['pagination']['currentPage'] - 1; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>" class="pagination-item"><i class="fas fa-angle-left"></i></a>
+                <?php endif; ?>
+                
+                <?php for($i = 1; $i <= $data['pagination']['totalPages']; $i++) : ?>
+                    <a href="<?php echo URLROOT; ?>/dashboard/stages?page=<?php echo $i; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>" class="pagination-item <?php echo ($i === $data['pagination']['currentPage']) ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                <?php endfor; ?>
+                
+                <?php if($data['pagination']['currentPage'] < $data['pagination']['totalPages']) : ?>
+                    <a href="<?php echo URLROOT; ?>/dashboard/stages?page=<?php echo $data['pagination']['currentPage'] + 1; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>" class="pagination-item"><i class="fas fa-angle-right"></i></a>
                 <?php endif; ?>
             </div>
-        <?php endforeach; ?>
+        <?php endif; ?>
     <?php else : ?>
         <div class="empty-state">
-            <i class="fas fa-search"></i>
-            <h3>Aucune offre de stage trouvée</h3>
-            <p>Essayez de modifier vos critères de recherche ou revenez plus tard.</p>
+            <img src="<?php echo URLROOT; ?>/public/img/empty-stages.svg" alt="Aucun stage trouvé" class="empty-icon">
+            <h2>Aucune offre de stage trouvée</h2>
+            <p>Nous n'avons pas trouvé d'offres correspondant à vos critères de recherche.</p>
+            <?php if(isset($_GET['search']) || isset($_GET['location']) || isset($_GET['duration'])) : ?>
+                <a href="<?php echo URLROOT; ?>/dashboard/stages" class="btn btn-primary">Réinitialiser les filtres</a>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle des filtres
-        const toggleFiltersBtn = document.getElementById('toggle-filters');
-        const filtersPanel = document.getElementById('filters-panel');
+        // Gestion des filtres
+        const toggleFilters = document.getElementById('toggleFilters');
+        const filtersPanel = document.getElementById('filtersPanel');
         
-        toggleFiltersBtn.addEventListener('click', function() {
-            filtersPanel.classList.toggle('open');
-        });
-        
-        // Boutons wishlist
-        const wishlistButtons = document.querySelectorAll('.wishlist');
-        wishlistButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const icon = this.querySelector('i');
-                icon.classList.toggle('far');
-                icon.classList.toggle('fas');
-                
-                if(icon.classList.contains('fas')) {
-                    // TODO: Ajout à la wishlist via Ajax
-                    console.log('Ajouté à la wishlist');
-                } else {
-                    // TODO: Retrait de la wishlist via Ajax
-                    console.log('Retiré de la wishlist');
-                }
+        if(toggleFilters && filtersPanel) {
+            toggleFilters.addEventListener('click', function() {
+                filtersPanel.classList.toggle('show');
             });
-        });
+        }
+        
+        // Si des filtres sont déjà appliqués, afficher le panneau
+        <?php if(isset($_GET['location']) || isset($_GET['duration'])) : ?>
+            if(filtersPanel) {
+                filtersPanel.classList.add('show');
+            }
+        <?php endif; ?>
     });
 </script>
 

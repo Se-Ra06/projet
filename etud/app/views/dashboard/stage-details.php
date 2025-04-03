@@ -1,265 +1,377 @@
 <?php
-// S'assurer que les constantes sont définies
+// S'assurer que le fichier config est inclus
 if (!defined('APPROOT')) {
-    require_once dirname(dirname(__DIR__)) . '/config/config.php';
+    require_once '../../config/config.php';
 }
 
+// Inclure l'en-tête du dashboard
 $data['active'] = 'stages';
 require APPROOT . '/views/shared/dashboard_header.php'; 
 ?>
 
 <div class="dashboard-welcome">
-    <h1><?php echo $data['stage']->titre; ?></h1>
-    <p><?php echo $data['stage']->entreprise_nom; ?></p>
+    <a href="<?php echo URLROOT; ?>/dashboard/stages" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour aux offres
+    </a>
+    <h1><?php echo $data['stage']->title; ?></h1>
+    <div class="entreprise-info">
+        <span><i class="fas fa-building"></i> <?php echo $data['stage']->name_company; ?></span>
+        <span><i class="fas fa-map-marker-alt"></i> <?php echo $data['stage']->location; ?></span>
+    </div>
 </div>
 
-<div class="dashboard-content-row">
-    <div class="dashboard-card stage-details-card">
-        <div class="card-header">
-            <h2>Détails de l'offre</h2>
-        </div>
-        <div class="card-body">
-            <div class="stage-header">
-                <div class="stage-info">
-                    <div class="stage-company">
-                        <?php if(isset($data['stage']->logo_url) && !empty($data['stage']->logo_url)): ?>
-                            <img src="<?php echo URLROOT . '/' . $data['stage']->logo_url; ?>" alt="Logo entreprise">
-                        <?php else: ?>
-                            <div class="company-placeholder">
-                                <i class="fas fa-building"></i>
-                            </div>
-                        <?php endif; ?>
-                        <div>
-                            <h3><?php echo $data['stage']->entreprise_nom; ?></h3>
-                            <?php if(isset($data['stage']->secteur)): ?>
-                                <span class="company-sector"><?php echo $data['stage']->secteur; ?></span>
-                            <?php endif; ?>
-                        </div>
+<div class="dashboard-container">
+    <div class="stage-details-container">
+        <div class="stage-details-main">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Description du stage</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stage-description">
+                        <?php echo $data['stage']->description; ?>
                     </div>
+                    
+                    <div class="stage-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <strong>Durée:</strong>
+                                <span><?php echo $data['stage']->duration; ?> mois</span>
+                            </div>
+                        </div>
+                        
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div>
+                                <strong>Date de début:</strong>
+                                <span><?php echo date('d/m/Y', strtotime($data['stage']->start_date)); ?></span>
+                            </div>
+                        </div>
+                        
+                        <div class="meta-item">
+                            <i class="fas fa-tag"></i>
+                            <div>
+                                <strong>Type:</strong>
+                                <span><?php echo $data['stage']->type; ?></span>
+                            </div>
+                        </div>
+                        
+                        <?php if($data['stage']->remuneration > 0): ?>
+                        <div class="meta-item">
+                            <i class="fas fa-euro-sign"></i>
+                            <div>
+                                <strong>Rémunération:</strong>
+                                <span><?php echo $data['stage']->remuneration; ?> € / mois</span>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Compétences requises</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stage-skills">
+                        <?php 
+                        $skills = explode(',', $data['stage']->required_skills);
+                        foreach($skills as $skill): 
+                            $skill = trim($skill);
+                            if(!empty($skill)):
+                        ?>
+                            <span class="skill-badge"><?php echo $skill; ?></span>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
+                    </div>
+                </div>
+            </div>
+            
+            <?php if(!empty($data['stage']->additional_info)): ?>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Informations complémentaires</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stage-additional-info">
+                        <?php echo $data['stage']->additional_info; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="stage-details-sidebar">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Actions</h2>
+                </div>
+                <div class="card-body">
                     <div class="stage-actions">
                         <?php if($data['dejaPostule']): ?>
-                            <div class="already-applied">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Vous avez déjà postulé</span>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Vous avez déjà postulé à cette offre
                             </div>
                         <?php else: ?>
-                            <a href="<?php echo URLROOT; ?>/dashboard/postuler/<?php echo $data['stage']->id; ?>" class="btn btn-primary">Postuler</a>
+                            <a href="<?php echo URLROOT; ?>/dashboard/postuler/<?php echo $data['stage']->id_internship; ?>" class="btn btn-primary btn-block">
+                                <i class="fas fa-paper-plane"></i> Postuler à cette offre
+                            </a>
                         <?php endif; ?>
+                        
+                        <button class="btn btn-outline btn-block wishlist-btn" title="Ajouter aux favoris">
+                            <i class="fas fa-heart"></i> <span>Ajouter aux favoris</span>
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <div class="stage-meta">
-                <div class="meta-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span><?php echo isset($data['stage']->lieu) ? $data['stage']->lieu : 'Non spécifié'; ?></span>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>À propos de l'entreprise</h2>
                 </div>
-                <div class="meta-item">
-                    <i class="fas fa-calendar"></i>
-                    <span>
-                        <?php 
-                            if(isset($data['stage']->date_debut) && isset($data['stage']->date_fin)) {
-                                echo 'Du ' . date('d/m/Y', strtotime($data['stage']->date_debut)) . ' au ' . date('d/m/Y', strtotime($data['stage']->date_fin));
-                            } else {
-                                echo 'Dates non spécifiées';
-                            }
-                        ?>
-                    </span>
-                </div>
-                <div class="meta-item">
-                    <i class="fas fa-clock"></i>
-                    <span><?php echo isset($data['stage']->duree) ? $data['stage']->duree . ' mois' : 'Durée non spécifiée'; ?></span>
-                </div>
-                <div class="meta-item">
-                    <i class="fas fa-tag"></i>
-                    <span><?php echo isset($data['stage']->type) ? $data['stage']->type : 'Type non spécifié'; ?></span>
-                </div>
-            </div>
-            
-            <div class="stage-description">
-                <h3>Description</h3>
-                <div class="description-content">
-                    <?php echo nl2br($data['stage']->description); ?>
+                <div class="card-body">
+                    <div class="entreprise-details">
+                        <h3><?php echo $data['stage']->name_company; ?></h3>
+                        <p><?php echo $data['stage']->address; ?></p>
+                        
+                        <?php if(!empty($data['stage']->sector)): ?>
+                        <div class="meta-item">
+                            <i class="fas fa-industry"></i>
+                            <div>
+                                <strong>Secteur:</strong>
+                                <span><?php echo $data['stage']->sector; ?></span>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if(!empty($data['stage']->website)): ?>
+                        <div class="meta-item">
+                            <i class="fas fa-globe"></i>
+                            <div>
+                                <strong>Site web:</strong>
+                                <a href="<?php echo $data['stage']->website; ?>" target="_blank"><?php echo $data['stage']->website; ?></a>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-            
-            <?php if(isset($data['stage']->competences_requises) && !empty($data['stage']->competences_requises)): ?>
-            <div class="stage-skills">
-                <h3>Compétences requises</h3>
-                <div class="skills-list">
-                    <?php 
-                        $competences = explode(',', $data['stage']->competences_requises);
-                        foreach($competences as $competence): 
-                    ?>
-                        <span class="skill-badge"><?php echo trim($competence); ?></span>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endif; ?>
-            
-            <?php if(isset($data['stage']->remuneration) && !empty($data['stage']->remuneration)): ?>
-            <div class="stage-salary">
-                <h3>Rémunération</h3>
-                <p><?php echo $data['stage']->remuneration; ?> €/mois</p>
-            </div>
-            <?php endif; ?>
-        </div>
-    </div>
-    
-    <div class="dashboard-card company-info">
-        <div class="card-header">
-            <h2>À propos de l'entreprise</h2>
-        </div>
-        <div class="card-body">
-            <?php if(isset($data['stage']->entreprise_description) && !empty($data['stage']->entreprise_description)): ?>
-                <div class="company-description">
-                    <?php echo nl2br($data['stage']->entreprise_description); ?>
-                </div>
-            <?php else: ?>
-                <p>Aucune information disponible sur cette entreprise.</p>
-            <?php endif; ?>
-            
-            <?php if(isset($data['stage']->entreprise_site) && !empty($data['stage']->entreprise_site)): ?>
-                <div class="company-website">
-                    <a href="<?php echo $data['stage']->entreprise_site; ?>" target="_blank" class="btn btn-outline">
-                        <i class="fas fa-globe"></i> Visiter le site web
-                    </a>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
 
 <style>
-    .stage-details-card {
-        flex: 2;
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        text-decoration: none;
+        transition: color 0.2s;
     }
     
-    .company-info {
-        flex: 1;
+    .back-link:hover {
+        color: var(--primary-color-dark);
     }
     
-    .stage-header {
+    .back-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .dashboard-welcome {
         margin-bottom: 1.5rem;
     }
     
-    .stage-info {
+    .entreprise-info {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        color: var(--dark-color-light);
     }
     
-    .stage-company {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .stage-company img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        border-radius: var(--border-radius);
-        border: 1px solid #e2e8f0;
-    }
-    
-    .company-placeholder {
-        width: 60px;
-        height: 60px;
+    .entreprise-info span {
         display: flex;
         align-items: center;
-        justify-content: center;
-        background-color: #f7f9fc;
-        border-radius: var(--border-radius);
-        border: 1px solid #e2e8f0;
     }
     
-    .company-placeholder i {
-        font-size: 1.5rem;
+    .entreprise-info i {
+        margin-right: 0.5rem;
         color: var(--primary-color);
     }
     
-    .stage-company h3 {
-        margin: 0;
-        font-size: 1.1rem;
+    .stage-details-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
     }
     
-    .company-sector {
-        display: inline-block;
-        font-size: 0.85rem;
-        color: var(--dark-gray);
-        margin-top: 0.25rem;
-    }
-    
-    .already-applied {
+    .stage-details-main {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background-color: rgba(46, 204, 113, 0.1);
-        color: var(--success-color);
-        border-radius: var(--border-radius);
-        font-weight: 500;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .stage-details-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .stage-description {
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        color: var(--dark-color);
     }
     
     .stage-meta {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 1rem;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background-color: #f7f9fc;
-        border-radius: var(--border-radius);
     }
     
     .meta-item {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
+        align-items: flex-start;
+        gap: 0.75rem;
     }
     
     .meta-item i {
         color: var(--primary-color);
+        margin-top: 2px;
     }
     
-    .stage-description, .stage-skills, .stage-salary {
-        margin-bottom: 1.5rem;
+    .meta-item strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+        color: var(--dark-color);
     }
     
-    .stage-description h3, .stage-skills h3, .stage-salary h3 {
-        font-size: 1.1rem;
-        margin-bottom: 0.75rem;
+    .meta-item span {
+        color: var(--dark-color-light);
     }
     
-    .description-content {
-        line-height: 1.6;
-    }
-    
-    .skills-list {
+    .stage-skills {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
     }
     
     .skill-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background-color: rgba(67, 97, 238, 0.1);
-        color: var(--primary-color);
-        border-radius: 20px;
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        padding: 0.5rem 0.75rem;
+        border-radius: 50px;
         font-size: 0.85rem;
-        font-weight: 500;
+        display: inline-block;
     }
     
-    .company-description {
+    .stage-additional-info {
         line-height: 1.6;
-        margin-bottom: 1.5rem;
+        color: var(--dark-color);
     }
     
-    .company-website {
-        margin-top: 1rem;
+    .stage-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-block {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .wishlist-btn {
+        color: var(--gray-color);
+    }
+    
+    .wishlist-btn.active {
+        color: var(--danger-color);
+    }
+    
+    .wishlist-btn i {
+        font-size: 1.1rem;
+    }
+    
+    .entreprise-details h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.15rem;
+        color: var(--dark-color);
+    }
+    
+    .entreprise-details p {
+        margin-bottom: 1.25rem;
+        color: var(--dark-color-light);
+    }
+    
+    .entreprise-details .meta-item {
+        margin-bottom: 1rem;
+    }
+    
+    .entreprise-details a {
+        color: var(--primary-color);
+        text-decoration: none;
+        word-break: break-all;
+    }
+    
+    .entreprise-details a:hover {
+        text-decoration: underline;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .alert-info {
+        background-color: var(--info-color-light);
+        color: var(--info-color);
+        border: 1px solid var(--info-color-border);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 992px) {
+        .stage-details-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .stage-meta {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gérer le bouton wishlist
+        const wishlistBtn = document.querySelector('.wishlist-btn');
+        
+        wishlistBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            if(this.classList.contains('active')) {
+                this.querySelector('span').textContent = 'Retiré des favoris';
+                // Ici, vous pourriez ajouter du code AJAX pour enregistrer la wishlist en base de données
+            } else {
+                this.querySelector('span').textContent = 'Ajouter aux favoris';
+                // Ici, vous pourriez ajouter du code AJAX pour supprimer de la wishlist
+            }
+        });
+    });
+</script>
 
 <?php require APPROOT . '/views/shared/dashboard_footer.php'; ?> 

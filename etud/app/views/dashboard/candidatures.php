@@ -5,300 +5,237 @@ if (!defined('APPROOT')) {
 }
 
 $data['active'] = 'candidatures';
+$data['title'] = 'Mes candidatures';
 require APPROOT . '/views/shared/dashboard_header.php'; 
 ?>
 
-<div class="dashboard-welcome">
-    <h1>Mes Candidatures</h1>
-    <p>Suivez l'état de vos candidatures et restez informé des réponses des entreprises</p>
+<div class="page-header">
+    <h1>Mes candidatures</h1>
+    <p>Suivez l'avancement de vos candidatures et consultez l'historique de vos postulations.</p>
 </div>
 
-<div class="dashboard-card">
-    <div class="card-header">
-        <h2>Vos candidatures</h2>
+<div class="candidatures-stats">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Total</h3>
+            <div class="stat-number"><?php echo $data['stats']->total_candidatures ?? 0; ?></div>
+        </div>
     </div>
-    <div class="card-body">
-        <?php if(isset($data['candidatures']) && count($data['candidatures']) > 0) : ?>
-            <div class="candidatures-table-container">
-                <table class="candidatures-table">
-                    <thead>
-                        <tr>
-                            <th>Stage</th>
-                            <th>Entreprise</th>
-                            <th>Date de candidature</th>
-                            <th>Période</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($data['candidatures'] as $candidature) : ?>
-                            <tr>
-                                <td>
-                                    <div class="candidature-stage">
-                                        <h4><?php echo $candidature->stage_titre; ?></h4>
-                                    </div>
-                                </td>
-                                <td><?php echo $candidature->entreprise_nom; ?></td>
-                                <td><?php echo date('d/m/Y', strtotime($candidature->created_at)); ?></td>
-                                <td>
-                                    <?php 
-                                        if(isset($candidature->date_debut) && isset($candidature->date_fin)) {
-                                            echo date('d/m/Y', strtotime($candidature->date_debut)) . ' - ' . date('d/m/Y', strtotime($candidature->date_fin));
-                                        } else {
-                                            echo 'Non spécifiée';
-                                        }
-                                    ?>
-                                </td>
-                                <td>
-                                    <div class="status-badge <?php echo $candidature->statut; ?>">
-                                        <?php 
-                                            switch($candidature->statut) {
-                                                case 'en_attente':
-                                                    echo 'En attente';
-                                                    break;
-                                                case 'acceptee':
-                                                    echo 'Acceptée';
-                                                    break;
-                                                case 'refusee':
-                                                    echo 'Refusée';
-                                                    break;
-                                                default:
-                                                    echo 'En traitement';
-                                            }
-                                        ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="candidature-actions">
-                                        <a href="<?php echo URLROOT; ?>/dashboard/stage/<?php echo $candidature->stage_id; ?>" class="btn-icon" title="Voir le stage">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <?php if($candidature->statut === 'en_attente') : ?>
-                                            <a href="#" class="btn-icon delete-candidature" data-id="<?php echo $candidature->id; ?>" title="Annuler la candidature">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php else : ?>
-            <div class="empty-state">
-                <i class="fas fa-file-alt"></i>
-                <h3>Aucune candidature</h3>
-                <p>Vous n'avez pas encore postulé à des offres de stage.</p>
-                <a href="<?php echo URLROOT; ?>/dashboard/stages" class="btn btn-primary">Découvrir les offres</a>
-            </div>
-        <?php endif; ?>
+    <div class="stat-card">
+        <div class="stat-icon status-pending">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+            <h3>En attente</h3>
+            <div class="stat-number"><?php echo $data['stats']->candidatures_en_attente ?? 0; ?></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon status-accepted">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Acceptées</h3>
+            <div class="stat-number"><?php echo $data['stats']->candidatures_acceptees ?? 0; ?></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon status-rejected">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Refusées</h3>
+            <div class="stat-number"><?php echo $data['stats']->candidatures_refusees ?? 0; ?></div>
+        </div>
     </div>
 </div>
 
-<!-- Modal de confirmation pour la suppression -->
-<div class="modal" id="deleteModal">
+<div class="candidatures-filter">
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">Toutes</button>
+        <button class="filter-tab" data-filter="pending">En attente</button>
+        <button class="filter-tab" data-filter="accepted">Acceptées</button>
+        <button class="filter-tab" data-filter="rejected">Refusées</button>
+    </div>
+    <div class="filter-search">
+        <input type="text" id="searchCandidature" placeholder="Rechercher dans vos candidatures...">
+        <i class="fas fa-search"></i>
+    </div>
+</div>
+
+<div class="candidatures-container">
+    <?php if (isset($data['candidatures']) && count($data['candidatures']) > 0) : ?>
+        <div class="candidatures-list">
+            <?php foreach ($data['candidatures'] as $candidature) : ?>
+                <?php 
+                    $statusClass = '';
+                    $statusText = '';
+                    $statusIcon = '';
+                    
+                    switch($candidature->status) {
+                        case 'pending':
+                            $statusClass = 'status-pending';
+                            $statusText = 'En attente';
+                            $statusIcon = 'clock';
+                            break;
+                        case 'accepted':
+                            $statusClass = 'status-accepted';
+                            $statusText = 'Acceptée';
+                            $statusIcon = 'check-circle';
+                            break;
+                        case 'rejected':
+                            $statusClass = 'status-rejected';
+                            $statusText = 'Refusée';
+                            $statusIcon = 'times-circle';
+                            break;
+                        default:
+                            $statusClass = 'status-pending';
+                            $statusText = 'En attente';
+                            $statusIcon = 'clock';
+                    }
+                ?>
+                <div class="candidature-card" data-status="<?php echo $candidature->status; ?>">
+                    <div class="candidature-header">
+                        <h3 class="candidature-title"><?php echo htmlspecialchars($candidature->stage_titre); ?></h3>
+                        <div class="candidature-status <?php echo $statusClass; ?>">
+                            <i class="fas fa-<?php echo $statusIcon; ?>"></i> <?php echo $statusText; ?>
+                        </div>
+                    </div>
+                    <div class="candidature-company">
+                        <i class="fas fa-building"></i> <?php echo htmlspecialchars($candidature->entreprise_nom); ?>
+                    </div>
+                    <div class="candidature-details">
+                        <div class="candidature-date">
+                            <i class="fas fa-calendar-alt"></i> Postulé le <?php echo date('d/m/Y', strtotime($candidature->date_candidature)); ?>
+                        </div>
+                        <?php if (!empty($candidature->date_reponse)) : ?>
+                            <div class="candidature-response-date">
+                                <i class="fas fa-reply"></i> Réponse le <?php echo date('d/m/Y', strtotime($candidature->date_reponse)); ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="candidature-documents">
+                        <div class="document-badge">
+                            <i class="fas fa-file-pdf"></i> CV
+                        </div>
+                        <?php if (!empty($candidature->lettre_motivation)) : ?>
+                            <div class="document-badge">
+                                <i class="fas fa-file-alt"></i> Lettre de motivation
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="candidature-actions">
+                        <a href="<?php echo URLROOT; ?>/dashboard/stage/<?php echo $candidature->id_stage; ?>" class="btn btn-outline">Voir l'offre</a>
+                        <button class="btn btn-icon" title="Supprimer la candidature" onclick="confirmDelete(<?php echo $candidature->id; ?>)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else : ?>
+        <div class="empty-state">
+            <img src="<?php echo URLROOT; ?>/public/img/empty-applications.svg" alt="Aucune candidature" class="empty-icon">
+            <h2>Aucune candidature</h2>
+            <p>Vous n'avez pas encore postulé à des offres de stage.</p>
+            <a href="<?php echo URLROOT; ?>/dashboard/stages" class="btn btn-primary">Découvrir les offres</a>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div id="deleteModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Confirmer l'annulation</h3>
-            <button class="close-modal"><i class="fas fa-times"></i></button>
+            <h2>Confirmer la suppression</h2>
+            <span class="close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Êtes-vous sûr de vouloir annuler cette candidature ? Cette action est irréversible.</p>
+            <p>Êtes-vous sûr de vouloir supprimer cette candidature ?</p>
+            <p class="warning">Cette action est irréversible.</p>
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" id="cancelDelete">Annuler</button>
-            <button class="btn btn-danger" id="confirmDelete">Confirmer</button>
+            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Supprimer</a>
         </div>
     </div>
 </div>
 
-<style>
-    /* Styles pour la table des candidatures */
-    .candidatures-table-container {
-        overflow-x: auto;
-    }
-    
-    .candidatures-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.95rem;
-    }
-    
-    .candidatures-table thead {
-        background-color: #f7f9fc;
-    }
-    
-    .candidatures-table th,
-    .candidatures-table td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .candidatures-table th {
-        font-weight: 600;
-        color: var(--dark-color);
-    }
-    
-    .candidature-stage h4 {
-        margin: 0;
-        font-size: 1rem;
-        color: var(--dark-color);
-    }
-    
-    .status-badge {
-        display: inline-block;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-    
-    .status-badge.en_attente {
-        background-color: rgba(243, 156, 18, 0.1);
-        color: var(--warning-color);
-    }
-    
-    .status-badge.acceptee {
-        background-color: rgba(46, 204, 113, 0.1);
-        color: var(--success-color);
-    }
-    
-    .status-badge.refusee {
-        background-color: rgba(231, 76, 60, 0.1);
-        color: var(--danger-color);
-    }
-    
-    .candidature-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
-    
-    /* Styles pour la modal */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .modal.show {
-        display: flex;
-    }
-    
-    .modal-content {
-        background-color: white;
-        border-radius: var(--border-radius);
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-lg);
-        animation: modalFadeIn 0.3s ease;
-    }
-    
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .modal-header h3 {
-        margin: 0;
-        color: var(--dark-color);
-    }
-    
-    .close-modal {
-        background: none;
-        border: none;
-        color: #718096;
-        cursor: pointer;
-        font-size: 1.25rem;
-    }
-    
-    .modal-body {
-        padding: 1.5rem;
-    }
-    
-    .modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-    }
-    
-    .btn-danger {
-        background-color: var(--danger-color);
-        color: white;
-    }
-    
-    .btn-danger:hover {
-        background-color: #c0392b;
-    }
-    
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-</style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Gestion de la suppression de candidature
-        const deleteButtons = document.querySelectorAll('.delete-candidature');
-        const deleteModal = document.getElementById('deleteModal');
-        const cancelDeleteBtn = document.getElementById('cancelDelete');
-        const confirmDeleteBtn = document.getElementById('confirmDelete');
-        const closeModalBtn = document.querySelector('.close-modal');
+        // Filtrage des candidatures par statut
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const candidatureCards = document.querySelectorAll('.candidature-card');
         
-        let candidatureIdToDelete = null;
-        
-        // Ouvrir la modal
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                candidatureIdToDelete = this.getAttribute('data-id');
-                deleteModal.classList.add('show');
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Retirer la classe active de tous les onglets
+                filterTabs.forEach(t => t.classList.remove('active'));
+                // Ajouter la classe active à l'onglet cliqué
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                // Filtrer les candidatures
+                candidatureCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.status === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
             });
         });
         
-        // Fermer la modal
-        function closeModal() {
-            deleteModal.classList.remove('show');
-            candidatureIdToDelete = null;
+        // Recherche dans les candidatures
+        const searchInput = document.getElementById('searchCandidature');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                
+                candidatureCards.forEach(card => {
+                    const title = card.querySelector('.candidature-title').textContent.toLowerCase();
+                    const company = card.querySelector('.candidature-company').textContent.toLowerCase();
+                    
+                    if (title.includes(searchValue) || company.includes(searchValue)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
         }
         
-        cancelDeleteBtn.addEventListener('click', closeModal);
-        closeModalBtn.addEventListener('click', closeModal);
+        // Modal de confirmation de suppression
+        const modal = document.getElementById('deleteModal');
+        const closeBtn = document.querySelector('.close');
+        const cancelBtn = document.getElementById('cancelDelete');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
         
-        // Cliquer en dehors de la modal ferme la modal
-        deleteModal.addEventListener('click', function(e) {
-            if (e.target === deleteModal) {
-                closeModal();
-            }
-        });
+        // Fonction pour ouvrir la modal
+        window.confirmDelete = function(id) {
+            modal.style.display = 'block';
+            confirmBtn.href = `<?php echo URLROOT; ?>/dashboard/delete_candidature/${id}`;
+        }
         
-        // Confirmer la suppression
-        confirmDeleteBtn.addEventListener('click', function() {
-            if (candidatureIdToDelete) {
-                window.location.href = `<?php echo URLROOT; ?>/dashboard/supprimerCandidature/${candidatureIdToDelete}`;
+        // Fermer la modal
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        cancelBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        // Fermer la modal si on clique en dehors
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
             }
-        });
+        }
     });
 </script>
 

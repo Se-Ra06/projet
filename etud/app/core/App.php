@@ -33,8 +33,35 @@ class App {
      * Démarre l'application
      */
     public function run() {
-        // Résoudre la route
-        $this->router->resolve();
+        try {
+            // Résoudre la route
+            $this->router->resolve();
+        } catch (Exception $e) {
+            // Afficher l'erreur
+            echo '<h1>Erreur</h1>';
+            echo '<p>' . $e->getMessage() . '</p>';
+            
+            // En développement uniquement, afficher plus de détails
+            if(ENVIRONMENT === 'development') {
+                echo '<p>File: ' . $e->getFile() . ' line ' . $e->getLine() . '</p>';
+                echo '<pre>' . $e->getTraceAsString() . '</pre>';
+            }
+        }
+    }
+    
+    /**
+     * Récupère l'URL demandée
+     * 
+     * @return string L'URL
+     */
+    private function getRequestedUrl() {
+        if(isset($_GET['url'])) {
+            $url = rtrim($_GET['url'], '/');
+            $url = filter_var($url, FILTER_SANITIZE_URL);
+            return $url;
+        }
+        
+        return '';
     }
     
     /**
